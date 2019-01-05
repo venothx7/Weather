@@ -1,12 +1,9 @@
-import React from "react";
-import Title from "./components/Title";
-import Form from "./components/Form";
+import React, { Component } from "react";
+import "./App.css";
 import Weather from "./components/Weather";
 
 const API_KEY = "0775e8c654bde69682b77b834f79a657";
-
-class App extends React.Component {
-  // create an instance
+class App extends Component {
   state = {
     temperature: undefined,
     city: undefined,
@@ -15,57 +12,71 @@ class App extends React.Component {
     description: undefined,
     error: undefined
   };
-
-  getWeather = async e => {
+  //`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${API_KEY}`
+  handleClick = async e => {
     e.preventDefault();
     const city = e.target.elements.city.value;
     const country = e.target.elements.country.value;
     const api_call = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${API_KEY}`
-    );
-    const data = await api_call.json(); // converted to json
-    console.log(data);
-
-    if (city && country) {
-      if ((data.cod = "200")) {
-        this.setState({
-          temperature: data.main.temp,
-          city: data.name,
-          country: data.sys.country,
-          humidity: data.main.humidity,
-          description: data.weather[0].description,
-          error: ""
-        });
-      } else {
-        this.setState({ error: "Code: " + data.cod + " Error: " + data.mssg });
-      }
+      `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${API_KEY}&units=imperial`
+    ).catch(e => {
+      console.log(e);
+    });
+    const data = await api_call.json();
+    if (city && country && data.cod === 200) {
+      this.setState({
+        temperature: data.main.temp,
+        city: data.name,
+        country: data.sys.country,
+        humidity: data.main.humidity,
+        description: data.weather[0].description,
+        error: ""
+      });
     } else {
       this.setState({
-        temperature: undefined,
-        city: undefined,
-        country: undefined,
-        humidity: undefined,
-        description: undefined,
-        error: "Please enter values!"
+        temperature: "",
+        city: "",
+        country: "",
+        humidity: "",
+        description: "",
+        error: "Error: " + data.cod + " " + data.message
       });
     }
   };
 
   render() {
-    // built in method for React.Component,s returns jsx(similar to html but with js)
     return (
-      //can only return parent one element(<div> or <p>)
-      <div>
-        <Title />
-        <Form getWeather={this.getWeather} />
-        <Weather
-          temperature={this.state.temperature}
-          city={this.state.city}
-          country={this.state.country}
-          humidity={this.state.humidity}
-          description={this.state.description}
-          error={this.state.error}
-        />
+      <div className="container">
+        <center>
+          <div className="card" id="card1">
+            <h2>Weather App</h2>
+            <form onSubmit={this.handleClick}>
+              <input
+                type="text"
+                placeholder="City.."
+                name="city"
+                className="form-control"
+              />
+              <br />
+              <input
+                type="text"
+                placeholder="Country.."
+                name="country"
+                className="form-control"
+              />
+              <br />
+              <button className="btn btn-info">Get Weather</button>
+            </form>
+            <Weather
+              temperature={this.state.temperature}
+              city={this.state.city}
+              country={this.state.country}
+              humidity={this.state.humidity}
+              description={this.state.description}
+              error={this.state.error}
+            />
+          </div>
+        </center>
       </div>
     );
   }
